@@ -385,7 +385,7 @@ kable(rmse_results %>% slice(1:8), caption = "Table 14: RMSE results after eight
 Note that it would be more appropriate to perform CV on `edx_train` to select the optimal $p$, however due to the time it takes to construct the CF models various values of $p$ are simply tested against `edx_test`. Despite not using CV in this instance, the final hold out test set, `validation`, still hasn't been used so the final assessment is still fair.
 
 
-# Final Model
+# Final Model (Results)
 
 
 The previous sections construct models which are assessed using `edx_test` which is a subset of `edx`. The best performing model is [User-Item-Based Collaborative Filtering (Ensemble)] which yields an RMSE of `r round(rmse_8, 4)`. Therefore, the final model takes the same approach. The final model is constructed using the entire `edx` data set and is then evaluated using `validation`. Note that `validation` is not used at any point in this report so it is a fair assessment.
@@ -449,7 +449,9 @@ kable(final_results, caption = "Table 15: RMSE of final model.")
 
 This report discusses a few methods used to construct recommendation systems. The best performing model is [User-Item-Based Collaborative Filtering (Ensemble)] which yields an RMSE of `r round(rmse_final, 4)` when trained on `edx` and tested on `validation`. This is an improvement on the first model's RMSE by around 25%.
 
-Those interested in a more advanced approach to construct recommender systems should consult the [recosystem](www.reco) package. It provides the means to implement matrix factorisation on large data sets. It is a scalable alternative to the likes of [recommenderlab](www.recommender). The high level idea of matrix factorisation is that different movies have different features, and those features appeal to some users and not to others. These features are 'latent factors', they don't have predetermined definitions. Luis Serrano explains the concept well in [this](https://www.youtube.com/watch?v=ZspR5PZemcs) video. Matrix factorisation using recosystem improved on this report's best performing model's RMSE by just under 2%.
+Although Nikolić's scalable approach to constructing CF models is convenient, it would be much more preferable to calculate the similarity measures using the entire matrix instead of splitting it into chunks. This is the main limitation of the final model. A further limitation is that, in this report, the tuning parameters are not optimised. The chunk sizes are more dependent on computing power, however $k$ could easily be optimised using cross validation with enough computing power.
+
+Those interested in a more advanced approach to construct recommender systems should consult the [recosystem](https://cran.r-project.org/web/packages/recosystem/vignettes/introduction.html) package. It provides the means to implement matrix factorisation on large data sets. It is a scalable alternative to the likes of [recommenderlab](www.recommender). The high level idea of matrix factorisation is that different movies have different features, and those features appeal to some users and not to others. These features are 'latent factors', they don't have predetermined definitions. Luis Serrano explains the concept well in [this](https://www.youtube.com/watch?v=ZspR5PZemcs) video. Matrix factorisation using recosystem improved on this report's best performing model's RMSE by just under 2%.
 
 Many thanks are due to Rafael Irizarry, the course instructor of HarvardX's Professional Certificate in Data Science, and to the teaching staff who were always at hand to answer questions and queries raised by students. This edX series has been thoroughly enjoyable and valuable. Irizarry delivered engaging lectures and provided a range of useful coding examples throughout the series.
 
