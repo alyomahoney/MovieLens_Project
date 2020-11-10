@@ -32,7 +32,7 @@ A summary of the techniques used by BellKor's Pragmatic Chaos is available [here
 
 
 # Introduction
-This report aims to construct a movie recommendation system via machine learning methods. [Approach 1: Simple Bias] accounts for basic movie to movie and user to user variability. [Approach 2: Regularised Bias] is similar, however regularisation is implemented. This turns out to be only a minor improvement on non-regularised bias. [Approach 3: Collaborative Filtering] uses a nearest neighbours style approach. It makes use of the idea that some users are similar to other users, and that some movies are similar to other movies. [Final Model] retrains the best performing model and assesses its performance using a validation set which has not been used at any point in this report.
+This report aims to construct a movie recommendation system via machine learning methods. [Approach 1: Simple Bias] accounts for basic movie to movie and user to user variability. [Approach 2: Regularised Bias] is similar, however regularisation is implemented. This turns out to be only a minor improvement on non-regularised bias. [Approach 3: Collaborative Filtering] uses a nearest neighbours style approach. It makes use of the idea that some users are similar to other users, and that some movies are similar to other movies. [Final Model (Results)] retrains the best performing model and assesses its performance using a validation set which has not been used for model construction or selection at any point in this report.
 
 The data being worked with is the [MovieLens 10M Dataset](https://grouplens.org/datasets/movielens/10m/). It was created by [GroupLens](https://grouplens.org), a research group in the Department of Computer Science and Engineering at the University of Minnesota [[3](https://grouplens.org/datasets/movielens/10m/)]. It contains over ten million ratings for over ten thousand movies from various users.
 
@@ -327,6 +327,10 @@ There is one small problem which needs addressing before the performance of the 
 
 where $S$ is the set of users that have rated movie $m$ out of the $k$ users most similar to user $u$, $sim(u,U)$ is the cosine similarity between user $u$ and user $U$,  and $\beta_m$ and $\beta_u$ are the __regularised__ movie and user biases respectively, calculated in [Regularised Movie and User Bias].
 
+::: warning
+IMPORTANT NOTE: Before the similarities are calculated, the overall mean and regularised row and column means are subtracted from the matrix. This means that the UBCF model is dealing with a residual matrix, taking [Regularised Movie and User Bias] to be the base model. Once the similarities and residual predictions are calculated, $\mu$, $b_m$ and $b_u$ are then added to the residual predictions to achieve the actual predictions. This takes place in all CF models in this report, but it is not highlighted in the formulae as is begins to look messy.
+:::
+
 This model appears to be a deterioration on the previous model, resulting in an RMSE of `r round(rmse_6, 4)`. The following section takes a similar approach, only this time considering similarities between movies.
 
 ```{r rmse_6, echo = FALSE}
@@ -451,7 +455,7 @@ This report discusses a few methods used to construct recommendation systems. Th
 
 Although Nikolić's scalable approach to constructing CF models is convenient, it would be much more preferable to calculate the similarity measures using the entire matrix instead of splitting it into chunks. This is the main limitation of the final model. A further limitation is that, in this report, the tuning parameters are not optimised. The chunk sizes are more dependent on computing power, however $k$ could easily be optimised using cross validation with enough computing power.
 
-Those interested in a more advanced approach to construct recommender systems should consult the [recosystem](https://cran.r-project.org/web/packages/recosystem/vignettes/introduction.html) package. It provides the means to implement matrix factorisation on large data sets. It is a scalable alternative to the likes of [recommenderlab](www.recommender). The high level idea of matrix factorisation is that different movies have different features, and those features appeal to some users and not to others. These features are 'latent factors', they don't have predetermined definitions. Luis Serrano explains the concept well in [this](https://www.youtube.com/watch?v=ZspR5PZemcs) video. Matrix factorisation using recosystem improved on this report's best performing model's RMSE by just under 2%.
+Those interested in a more advanced approach to construct recommender systems should consult the [recosystem](https://cran.r-project.org/web/packages/recosystem/vignettes/introduction.html) package. It provides the means to implement matrix factorisation on large data sets. It is a scalable alternative to the likes of [recommenderlab](www.recommender). The high level idea of matrix factorisation is that different movies have different features, and those features appeal to some users and not to others. These features are 'latent factors', they don't have predetermined definitions. Luis Serrano explains the concept well in [this](https://www.youtube.com/watch?v=ZspR5PZemcs) video. Matrix factorisation using recosystem improves on this report's best performing model's RMSE by just under 2%.
 
 Many thanks are due to Rafael Irizarry, the course instructor of HarvardX's Professional Certificate in Data Science, and to the teaching staff who were always at hand to answer questions and queries raised by students. This edX series has been thoroughly enjoyable and valuable. Irizarry delivered engaging lectures and provided a range of useful coding examples throughout the series.
 

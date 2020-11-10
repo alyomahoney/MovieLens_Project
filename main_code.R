@@ -778,7 +778,7 @@ predictions_final<- data.frame(ibcf = predictions_i,
 
 # calculate rmse for the final model
 rmse_final <- RMSE(validation$rating, predictions_final)
-final_results <- data.frame(Method = "User-Item-Based Collaborative filtering (Ensemble)",
+final_results <- data.frame(Method = "User-Item-Based Collaborative Filtering (Ensemble)",
                             RMSE = rmse_final)
 knitr::kable(final_results) # display the final rmse
 
