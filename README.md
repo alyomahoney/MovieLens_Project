@@ -6,7 +6,7 @@ This project completes part of the final assessment in HarvardX's Professional C
 ## Graded Files
 
 ### `main_code.R`
-This is the main R script which constructs the data and calculates predictions and RMSE results for each model. It also creates some basic plots for data exploration, illustrated in the final report. Note that this script sources R scripts in the folder `cf_scripts`. To successfully run `main_code.R`, the folder `cf_scripts` must be present in the working directory (relative paths in line with this repo are used).
+This is the main R script which constructs the data and calculates predictions and RMSE results for each model. The RMSE of the final model, trained on the `edx` data set, when tested against the `validation` data set is defined as `rmse_final`. This script also creates some basic plots for data exploration, illustrated in the final report. Note that this script sources R scripts in the folder `cf_scripts`. To successfully run `main_code.R`, the folder `cf_scripts` must be present in the working directory (relative paths in line with this repo are used).
 
 ### `final_report.Rmd`
 This is the final report in .Rmd form. The files loaded are created in `main_code.R`. The script `code.R` takes quite a while to run, so all of the R objects required to run `final_report.Rmd` are included in the folder `rmd_files`.  This folder must be present in the working directory (relative paths in line with this repo are used). This report is also available through [this RPubs link](http://rpubs.com/alyomahoney/movielens).
