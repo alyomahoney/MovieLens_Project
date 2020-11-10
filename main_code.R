@@ -21,8 +21,6 @@ library(magrittr)
 
 
 
-#  OBJECTS/PLOTS IN THIS CODE ARE SAVED AS SOME ARE USED IN THE RMARKDOWN REPORT
-
 ##########################################################
 # code provided by HarvardX
 # create edx set, validation set (final hold-out test set)
@@ -84,8 +82,8 @@ validation %<>% mutate(release_year = as.numeric(str_sub(title, start = -5, end 
 ##################
 
 # structure of edx data set
-edx_str <- capture.output(str(edx))
-cat(edx_str, sep = "\n")
+edx_str <- capture.output(str(edx)) # the reason for doing it like this is so that the output can be saved and loaded in the rmd file
+cat(edx_str, sep = "\n")            # that way, the entire edx data set doesn't have to be loaded
 
 # define the mean movie rating
 mu <- mean(edx$rating)
@@ -101,8 +99,6 @@ edx %>% ggplot(aes(rating)) +
   ylab("Count") +
   xlab("Rating")
 
-ggsave("plots/hist_of_ratings.png", width = 8, height = 5)
-
 # how does release year effect the rating?
 edx %>%
   group_by(release_year) %>%
@@ -115,8 +111,6 @@ edx %>%
   ylab("Mean Rating") +
   xlab("Release Year")
 
-ggsave("plots/release_year.png", width = 8, height = 5)
-
 # how does the year in which the movie was rated effect the rating?
 edx %>%
   group_by(year_rated) %>%
@@ -127,8 +121,6 @@ edx %>%
   ggtitle("Mean Rating for Each Year of Review") +
   ylab("Mean Rating") +
   xlab("Year of Review")
-
-ggsave("plots/year_rated.png", width = 8, height = 5)
 
 # how about the month in which the movie was rated?
 edx %>%
@@ -142,13 +134,11 @@ edx %>%
   ylab("Mean Rating") +
   xlab("Month of Review")
 
-ggsave("plots/month_rated.png", width = 8, height = 5)
-
 # how does the genre effect the rating?
 set.seed(2, sample.kind = "Rounding")
 edx_by_genre <- edx %>%
-  slice(sample(1:nrow(edx),100000)) %>% # sample used because 
-  separate_rows(genres, sep = "\\|") # takes a minute or two to run
+  slice(sample(1:nrow(edx),100000)) %>% # can't handle entire data set
+  separate_rows(genres, sep = "\\|")    # still takes a minute or two to run
 
 edx_by_genre %>%
   group_by(genres) %>%
@@ -169,8 +159,6 @@ edx_by_genre %>%
   ylab("Mean Rating") +
   xlab("Genre") +
   labs(size = "No. of ratings")
-
-ggsave("plots/by_genre.png", width = 8, height = 5)
 
 
 
@@ -233,8 +221,6 @@ edx %>%
   ylab("Count") +
   xlab("Mean Rating")
 
-ggsave("plots/movie_hist.png", width = 8, height = 5)
-
 # calculate b_m, the bias for each movie
 movie_bias <- edx_train %>%
   group_by(movieId) %>%
@@ -267,8 +253,6 @@ edx %>%
   ylab("Count") +
   xlab("Mean Rating")
 
-ggsave("plots/user_hist.png", width = 8, height = 5)
-
 # calculate b_u, the bias for each user after accounting for movie bias
 user_bias <- edx_train %>%
   left_join(movie_bias, by = "movieId") %>%
@@ -298,7 +282,7 @@ rmse_results <- rbind(rmse_results, data.frame(Method = "Movie + User Bias",
 # regularised movie bias
 ########################
 
-# motivation
+# motivational tables (these aren't convincing top/bottom five lists)
 movies <- edx %>% select(movieId, title) %>% unique() %>% arrange(movieId)
 
 top_five <- edx %>% count(movieId) %>%
@@ -320,7 +304,7 @@ bottom_five <- edx %>% count(movieId) %>%
 lambdas_m <- seq(1, 3, 0.1)                          # tuning parameter values to be tested
 k = 5                                                # 5-fold cross validation
 set.seed(1, sample.kind = "Rounding")
-ind <- createFolds(1:nrow(edx_train), k = k)               # create indices for the k folds
+ind <- createFolds(1:nrow(edx_train), k = k)         # create indices for the k folds
 
 # empty matrix which will store the cv rmse results
 rmses_lambda_m <- matrix(nrow = k, ncol = length(lambdas_m))
@@ -378,9 +362,7 @@ colMean_m %>%
   geom_point(aes(x = lambda_m, y = min(rmse)), shape = 5, size = 5) +
   ggtitle("RMSE for Various Values of \u03BB") +
   ylab("RMSE") +
-  xlab("\u03BB") 
-
-ggsave("plots/lambdas_m.png", width = 8, height = 5)
+  xlab("\u03BB")
 
 # define the regularised movie bias with the optimal lambda
 movie_bias_reg <- edx_train %>%
@@ -400,7 +382,7 @@ rmse_results <- rbind(rmse_results, data.frame(Method = "Regularised Movie Bias"
 
 
 
-
+# these new top/bottom five lists are much more convincing
 top_five_reg <- edx %>% count(movieId) %>%
   left_join(movie_bias_reg, by = "movieId") %>%
   left_join(movies, by = "movieId") %>%
@@ -415,8 +397,6 @@ bottom_five_reg <- edx %>% count(movieId) %>%
   select(title, b_m_reg, n) %>%
   slice(1:5)
 
-save(top_five, bottom_five, top_five_reg, bottom_five_reg, file = "rda/reg_motivation.rda")
-
 
 
 
@@ -424,12 +404,12 @@ save(top_five, bottom_five, top_five_reg, bottom_five_reg, file = "rda/reg_motiv
 # regularised movie and user bias
 #################################
 
-# the optimal lambda chosen for movie bias in the previous model will be fixed
+# the optimal lambda chosen for movie bias in the previous model is fixed
 
 lambdas_u <- seq(4, 6, 0.1)                          # tuning parameters to be tested
 k = 5                                                # 5-fold cross validation
 set.seed(1, sample.kind = "Rounding")
-ind <- createFolds(1:nrow(edx_train), k = k)               # create indices for the k folds
+ind <- createFolds(1:nrow(edx_train), k = k)         # create indices for the k folds
 
 # empty matrix which will store the cv rmse results
 rmses_lambda_u <- matrix(nrow = k, ncol = length(lambdas_u))
@@ -498,8 +478,6 @@ colMean_u %>%
   ylab("RMSE") +
   xlab("\u03BB")
 
-ggsave("plots/lambdas_u.png", width = 8, height = 5)
-
 # define the regularised movie bias with the optimal lambda
 user_bias_reg <- edx_train %>%
   left_join(movie_bias_reg, by = "movieId") %>%
@@ -530,15 +508,15 @@ rmse_results <- rbind(rmse_results, data.frame(Method = "Regularised Movie + Use
 ####################################
 
 # this section creates a recommendation system using Stefan Nikolic's adaptaion of Recommenderlab
-# Nikolic's adaptation is suitable for large data sets - recommenderlab alone is not able to handle `edx`
+# Nikolic's adaptation is suitable for large data sets - recommenderlab alone is not able to handle `edx_test`
 # Nikolic's github link: https://github.com/smartcat-labs/collaboratory
 # I thank and fully credit Nikolic for this solution to use collaborative filtering with large data sets
 
-# create matrix (each row is a user and each column is a movie. the values are the ratings)
+# create matrix (each row is a user and each column is a movie. the values are the residual ratings from reg movie + user bias model)
 train_mat <- edx_train %>%
   left_join(movie_bias_reg) %>%
   left_join(user_bias_reg) %>%
-  mutate(residual = rating - mu_train - b_m_reg - b_u_reg) %>%
+  mutate(residual = rating - mu_train - b_m_reg - b_u_reg) %>% # define the residuals from the reg movie + user bias model
   select(userId, movieId, residual) %>%
   spread(movieId, residual)
 rownames(train_mat) <- train_mat$userId                        # define row names (userId) which are in the first column of the matrix
@@ -584,9 +562,10 @@ preds_ubcf <- test_subset %>%
 # between users/movies due to the matrix being so sparse
 is.na(preds_ubcf$x)
 
+# replace with zeros
 preds_ubcf[is.na(preds_ubcf$x),"x"] <- 0
 
-# and again, to tackle this issue, the predictions from the regularised movie + user bias model will replace the missing values
+# since a residual matrix was used, the regularised parameter estimates have to be added to achieve final predictions
 predictions_6 <- edx_test %>%
   mutate(ubcf = preds_ubcf$x) %>%
   left_join(movie_bias_reg) %>%
@@ -596,6 +575,8 @@ predictions_6 <- edx_test %>%
 
 predictions_6[predictions_6<0.5] <- 0.5  # keep ratings within realistic bounds
 predictions_6[predictions_6>5] <- 5      # keep ratings within realistic bounds
+
+# calculate rmse for the new model and add it to the results data frame
 rmse_6 <- RMSE(edx_test$rating, predictions_6)
 rmse_results <- rbind(rmse_results, data.frame(Method = "User-Based Collaborative Filtering",
                                                RMSE = rmse_6))
@@ -619,10 +600,9 @@ preds_ibcf <- test_subset %>%
 
 # again, some values are missing
 is.na(preds_ibcf$x)
-
 preds_ibcf[is.na(preds_ibcf$x),"x"] <- 0
 
-# and again, to tackle this issue, the predictions from the regularised movie + user bias model will replace the missing values
+# again, the regularised parameter estimates have to be added to achieve final predictions
 predictions_7 <- edx_test %>%
   mutate(ibcf = preds_ibcf$x) %>%
   left_join(movie_bias_reg) %>%
@@ -632,10 +612,11 @@ predictions_7 <- edx_test %>%
 
 predictions_7[predictions_7<0.5] <- 0.5  # keep ratings within realistic bounds
 predictions_7[predictions_7>5] <- 5      # keep ratings within realistic bounds
+
+# calculate rmse for the new model and add it to the results data frame
 rmse_7 <- RMSE(edx_test$rating, predictions_7)
 rmse_results <- rbind(rmse_results, data.frame(Method = "Item-Based Collaborative Filtering",
                                                RMSE = rmse_7))
-
 
 
 
@@ -644,44 +625,46 @@ rmse_results <- rbind(rmse_results, data.frame(Method = "Item-Based Collaborativ
 # user-item-based collaborative filtering (ensemble)
 ####################################################
 
-# both of these models are big improvements on the previous models
 # this model ensembles the two collaborative filtering models by taking the average of their ratings
 
-# ibcf performs better, so give more weight to the ibcf predictions
+# ibcf performs better, so it might be of interest to give more weight to the ibcf predictions
 # cv could be used to determine coefficients, however only predictions are available, and we're not really training a model
 # this section just tries various p values and assesses the RMSE on the test set
 
-proportions <- seq(0.6, 0.9, by = 0.02)
-ens <- data.frame(ibcf = predictions_7,
+proportions <- seq(0.6, 0.9, by = 0.02)        # values of p to try (p is the weight given to the ibcf alg)
+ens <- data.frame(ibcf = predictions_7,        # data frame with predictions from both cf models
                    ubcf = predictions_6)
-rmses_ens <- sapply(proportions, function(p){
+rmses_ens <- sapply(proportions, function(p){  # return rmse values with various values of p
   ens %>%
     transmute(preds = p*ibcf+(1-p)*ubcf) %$%
     RMSE(preds, edx_test$rating)
 })
 
-opt_p <- proportions[which.min(rmses_ens)]
-prop_df <- data.frame(p = proportions,
+opt_p <- proportions[which.min(rmses_ens)]     # the value of p which returned the lowers rmse
+prop_df <- data.frame(p = proportions,         # data frame used to create the visualisation below
                       rmse = rmses_ens)
+
+# visualise which value of p gave the lowest rmse
 prop_df %>%
   ggplot(aes(p, rmse)) +
   geom_point() +
   geom_point(aes(x = opt_p, y = min(rmse)), shape = 5, size = 5) +
   ggtitle("RMSE for Various Values of p") +
   ylab("RMSE") +
-  xlab("p") 
+  xlab("p")
 
-ggsave("rmd_files/plots/ens_cv.png", width = 8, height = 5)
-
-# calculate the mean predictions
+# calculate the (weighted) mean predictions
 predictions_8 <- data.frame(ibcf = predictions_7,
                             ubcf = predictions_6) %>%
   transmute(preds = opt_p*ibcf+(1-opt_p)*ubcf) %>%
   .$preds
+
+# calculate rmse for the new model and add it to the results data frame
 rmse_8 <- RMSE(edx_test$rating, predictions_8)
 rmse_results <- rbind(rmse_results, data.frame(Method = "User-Item-Based Collaborative Filtering (Ensemble)",
                                                RMSE = rmse_8))
-knitr::kable(rmse_results) # view all of the RMSE values
+
+knitr::kable(rmse_results) # view all of the RMSE values. model 8 performs the best
 
 
 
@@ -690,8 +673,8 @@ knitr::kable(rmse_results) # view all of the RMSE values
 # user-item-based CF performance assessed on validation set - FINAL MODEL
 #########################################################################
 
-# the uibcf model performed best in terms of RMSE, so a new model will be constructed using the whole edx data set
-# this model's RMSE will be assessed using the validation set, which has not been touched up until now
+# the uibcf model performed best in terms of RMSE, so a new model of the same style will be constructed using the whole edx data set
+# this model's RMSE will be assessed using the validation set, which has not been used so far
 
 # create matrix (each row is a user and each column is a movie. the values are the ratings)
 movie_bias_reg_final <- edx %>%
@@ -704,6 +687,7 @@ user_bias_reg_final <- edx %>%
   group_by(userId) %>%
   summarise(b_u_reg = sum(rating - b_m_reg - mu)/(n()+lambda_u))
 
+# new user-movie matrix accounting for entire edx data set
 edx_mat <- edx %>%
   left_join(movie_bias_reg_final) %>%
   left_join(user_bias_reg_final) %>%
@@ -748,16 +732,9 @@ preds_ubcf_final <- validation_subset %>%
 # note that some values are NA. this is due to the nature of the algorithm. sometimes it's impossible to determine similarity measures
 # between users/movies due to the matrix being so sparse
 is.na(preds_ubcf_final$x)
-
-# to tackle this issue, the predictions from the regularised movie + user bias model will replace the missing values
-# define the regularised movie bias with the optimal lambda (using whole edx data set)
-
-
-
-# again, some values are missing
 preds_ubcf_final[is.na(preds_ubcf_final$x),"x"] <- 0
 
-# and again, to tackle this issue, the predictions from the regularised movie + user bias model will replace the missing values
+# again, the regularised parameter estimates have to be added to achieve final predictions
 predictions_u <- validation %>%
   mutate(temp = preds_ubcf_final$x) %>%
   left_join(movie_bias_reg_final) %>%
@@ -782,7 +759,7 @@ preds_ibcf_final <- validation_subset %>%
 is.na(preds_ibcf_final$x)
 preds_ibcf_final[is.na(preds_ibcf_final$x),"x"] <- 0
 
-# and again, to tackle this issue, the predictions from the regularised movie + user bias model will replace the missing values
+# again, the regularised parameter estimates have to be added to achieve final predictions
 predictions_i <- validation %>%
   mutate(temp = preds_ibcf_final$x) %>%
   left_join(movie_bias_reg_final) %>%
@@ -793,18 +770,16 @@ predictions_i <- validation %>%
 predictions_i[predictions_i<0.5] <- 0.5  # keep ratings within realistic bounds
 predictions_i[predictions_i>5] <- 5      # keep ratings within realistic bounds
 
-# both of these models are big improvements on the previous models
-# this model ensembles the two collaborative filtering models by taking the average of their ratings
-
-# calculate the mean predictions
+# calculate the (weighted) mean predictions using the optimal p
 predictions_final<- data.frame(ibcf = predictions_i,
                                ubcf = predictions_u) %>%
   transmute(preds = opt_p*ibcf+(1-opt_p)*ubcf) %>%
   .$preds
-rmse_final <- RMSE(validation$rating, predictions_final)
 
+# calculate rmse for the final model
+rmse_final <- RMSE(validation$rating, predictions_final)
 final_results <- data.frame(Method = "User-Item-Based Collaborative filtering (Ensemble)",
                             RMSE = rmse_final)
-knitr::kable(final_results)
+knitr::kable(final_results) # display the final rmse
 
 
